@@ -30,11 +30,11 @@ export const verifyToken = async (req, res, next) => {
     if(!employee?.id) return res.status(HTTP_STATUS.UN_AUTHORIZED.statusCode).json({ error:true, error_list: [{msg:"Token expired or not valid", "path":"token"}] });
 
     req["employeeId"] = employee?.id;
-    // if(req.method === "POST"){
-    //     req.body["createdBy"] = employee?.id;
-    // }else if(req.method === "PATCH" || req.method === "DELETE"){
-    //     req.body["updatedBy"] = employee?.id;
-    // }
+    if(req.method === "POST"){
+        req.body["createdBy"] = employee?.id;
+    }else if(req.method === "PATCH" || req.method === "DELETE"){
+        req.body["updatedBy"] = employee?.id;
+    }
 
     // req.body.userId = jwtDecode(token)?.user_id
     next();
