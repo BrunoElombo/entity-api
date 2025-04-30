@@ -66,7 +66,7 @@ export const getArticleFamilyByIdService = async(id) =>{
         let articleFamily = await articleFamilyClient.findFirst({
             where:{id, isActive: true},
         });
-        if (!article) throw new Error(`No article found.`)
+        if (!articleFamily) throw new Error(`No article found.`)
         return articleFamily;
     } catch (error) {
         console.log(error);
