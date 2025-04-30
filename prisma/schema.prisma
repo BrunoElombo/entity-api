@@ -278,7 +278,7 @@ model article {
   name            String
   price           Float           @default(0)
   hasTVA          Boolean         @default(false)
-  type            ARTICLE_TYPE
+  type            ARTICLE_TYPE?   @default(EQUIPEMENT)
   idEntity        String
   isActive        Boolean         @default(true)
   createdBy       String
