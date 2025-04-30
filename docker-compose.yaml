@@ -1,0 +1,60 @@
+networks:
+  web:
+    external: true
+  internal:
+    external: true
+
+
+services:
+  entity:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nodejs
+    container_name: entity
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - USER_GATEWAY_API_URL=$USER_GATEWAY_API_URL
+      - INCIDENT_API_URL=$INCIDENT_API_URL
+      - ENTITY_API_URL=$ENTITY_API_URL
+
+    labels:
+      - traefik.http.routers.blog.rule=Host(`entity.bfcgroupsa.com`)
+      - traefik.http.routers.blog.tls=true
+      - traefik.http.routers.blog.tls.certresolver=lets-encrypt
+      - traefik.port=80
+
+    networks:
+      - internal
+      - web
+
+  webserver:
+    image: nginx:mainline-alpine
+    container_name: webserver
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - web-root:/var/www/html
+      - .:/home/node/app
+      - node_modules:/home/node/app/node_modules
+      - ./nginx-conf:/etc/nginx/conf.d
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+    depends_on:
+      - entity
+    networks:
+      - app-network
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+      - web-root:/var/www/html
+    depends_on:
+      - webserver
+    command: certonly --webroot --webroot-path=/var/www/html --email ysiaka@bfclimited.com --agree-tos --no-eff-email --staging -d entity.bfcgroupsa.com  -d www.entity.bfcgroupsa.com
