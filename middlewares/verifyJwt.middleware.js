@@ -1,11 +1,11 @@
-import { USERS_API } from "../config/config.js";
+import { USERS_API, ENTITY_API, prisma } from "../config/config.js";
 import HTTP_STATUS from '../utils/http.utils.js';
 import { jwtDecode } from "jwt-decode";
 
-export const verifyToken = async (req, res, next) => {
+export const verifyJWT = async (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) {
-    return res.status(401).json({ message: 'No token provided' });
+    return res.status(HTTP_STATUS.UN_AUTHORIZED.statusCode).json({ error:true, error_list: [{msg:"token is not provided", field:"token"}] });
   }
 
   try {
@@ -26,17 +26,17 @@ export const verifyToken = async (req, res, next) => {
 
     let decodedToken = jwtDecode(token);
     if(!decodedToken) return res.status(HTTP_STATUS.UN_AUTHORIZED.statusCode).json({ error:true, error_list: [{msg:"Token expired or not valid", "path":"token"}] });
-    let employee = await getEmployee(decodedToken?.user_id, token);
-    if(!employee?.id) return res.status(HTTP_STATUS.UN_AUTHORIZED.statusCode).json({ error:true, error_list: [{msg:"Token expired or not valid", "path":"token"}] });
+    // let employee = await getEmployee(decodedToken?.user_id);
+    // console.log(employee)
+    // if(!employee) return res.status(HTTP_STATUS.UN_AUTHORIZED.statusCode).json({ error:true, error_list: [{msg:"Token expired or not valid", "path":"token"}] });
 
-    req["employeeId"] = employee?.id;
+    // req["employeeId"] = employee?.id;
     if(req.method === "POST"){
-        req.body["createdBy"] = employee?.id;
+        req.body["createdBy"] = decodedToken?.user_id;
     }else if(req.method === "PATCH" || req.method === "DELETE"){
-        req.body["updatedBy"] = employee?.id;
+        req.body["updatedBy"] = decodedToken?.user_id;
     }
 
-    // req.body.userId = jwtDecode(token)?.user_id
     next();
   } catch (error) {
     console.error(error);
@@ -49,25 +49,18 @@ export const verifyToken = async (req, res, next) => {
 
 
 
-const getEmployee = async (userId, token) =>{
+const getEmployee = async (userId) =>{
   if(!userId) return null
-  let url = `${ENTITY_API}/employees/?userId=${userId}`
-  let requestOptions ={
-      method: "GET",
-      headers:{
-          'Content-Type': 'application/json',
-          'authorization': `Bearer ${token}`
-      }
-  }
   try {
-      let response = await fetch(url, requestOptions);
-      if(response.status === 200){
-          let result = await response.json();
-          if(result?.data.length > 0){
-              return result?.data[0];
-          }
-          return result
-      }
+      
+      let employee = await prisma.employee.findFirst({
+        where:{
+          userId, isActive:true
+        }
+      });
+
+      if(!employee) return null;
+      return employee;
   } catch (error) {
       console.log(error);
       res
