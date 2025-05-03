@@ -2,7 +2,7 @@ import express from 'express'
 import bodyParser from 'body-parser';
 import morgan from 'morgan';
 import cors from 'cors';
-import { verifyToken } from './middlewares/verifyJwt.middleware.js';
+import { verifyJWT } from './middlewares/verifyJwt.middleware.js';
 const app = express();
 
 // Modules
@@ -42,7 +42,7 @@ app.use(logger);
 app.use(cors());
 app.use(bodyParser.json());
 app.use(morgan("common"));
-app.use(verifyToken);
+app.use(verifyJWT);
 app.use("/api/banks", bankRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/application-permissions", applicationPermissionRoutes);
