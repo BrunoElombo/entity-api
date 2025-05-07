@@ -89,6 +89,9 @@ export const getArticlesByParams = async (request) =>{
             // take: parseInt(limit),
             orderBy:{
                 name:'asc'
+            },
+            include:{
+                articleFamily:true
             }
         });
         const total = await articleClient.count({
