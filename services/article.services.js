@@ -42,7 +42,10 @@ export const getAllArticlesService = async(body) =>{
             }
         });
         const total = await articleClient.count({
-            where:{isActive:true}
+            where:{isActive:true},
+            include:{
+                articleFamily:true
+            }
         });
         return {
             // page: parseInt(page),
@@ -65,6 +68,9 @@ export const getArticleByIdService = async(id) =>{
     try {
         let article = await articleClient.findFirst({
             where:{id, isActive: true},
+            include:{
+                articleFamily:true
+            }
         });
         if (!article) throw new Error(`No article found.`)
         return article;
