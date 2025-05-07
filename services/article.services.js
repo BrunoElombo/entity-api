@@ -35,6 +35,9 @@ export const getAllArticlesService = async(body) =>{
     try {
         let articles = await articleClient.findMany({
             where:{isActive:true},
+            include:{
+                articleFamily:true
+            },
             // skip: parseInt(skip),
             // take: parseInt(LIMIT),
             orderBy:{
@@ -43,9 +46,6 @@ export const getAllArticlesService = async(body) =>{
         });
         const total = await articleClient.count({
             where:{isActive:true},
-            include:{
-                articleFamily:true
-            }
         });
         return {
             // page: parseInt(page),
