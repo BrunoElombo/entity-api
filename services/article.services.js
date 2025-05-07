@@ -85,8 +85,6 @@ export const getArticlesByParams = async (request) =>{
     try {
         let articles = await articleClient.findMany({
             where:queries,
-            // skip: parseInt(skip),
-            // take: parseInt(limit),
             orderBy:{
                 name:'asc'
             },
